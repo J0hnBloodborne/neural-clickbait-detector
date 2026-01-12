@@ -1,0 +1,1 @@
+# Assembled CNN class

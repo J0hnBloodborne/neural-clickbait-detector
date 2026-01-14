@@ -5,6 +5,9 @@ __pycache__/
 # Data (Never commit datasets!)
 data/train/*.png
 data/test/*.png
+data/mnist
+data/cifar-10
+
 
 *.jpg
 *.png
@@ -13,7 +16,7 @@ data/test/*.png
 *.csv
 *.7z
 
-
+ncd/
 # Editor junk
 .vscode/
 .idea/

@@ -59,6 +59,10 @@ class Adam(Optimizer):
                 continue
 
             for key in layer.params.keys():
+                # Skip parameters without gradients (e.g. running_mean)
+                if key not in layer.grads or layer.grads[key] is None:
+                    continue
+
                 # Get parameter and gradient
                 w = layer.params[key]
                 dw = layer.grads[key]

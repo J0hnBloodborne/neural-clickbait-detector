@@ -42,11 +42,26 @@ class Sequential:
         for layer in reversed(self.layers):
             dout = layer.backward(dout)
 
-    def predict(self, x):
-        logits = self.forward(x, training=False)
-        return xp.argmax(logits, axis=1)
+    def predict(self, x, batch_size=64):
+        num_samples = x.shape[0]
+        num_batches = int(np.ceil(num_samples / batch_size))
+        preds = []
 
-    def fit(self, x_train, y_train, epochs=10, batch_size=32, verbose=True):
+        for b in range(num_batches):
+            start = b * batch_size
+            end = min(start + batch_size, num_samples)
+            x_batch = x[start:end]
+            
+            # Using training=False for prediction
+            logits = self.forward(x_batch, training=False)
+            
+            # Get class indices
+            batch_preds = xp.argmax(logits, axis=1)
+            preds.append(batch_preds)
+            
+        return xp.concatenate(preds)
+
+    def fit(self, x_train, y_train, epochs=10, batch_size=32, verbose=True, x_val=None, y_val=None, patience=5):
         if not self.optimizer or not self.loss_function:
             raise ValueError("Model not compiled. Call .compile() first.")
 
@@ -54,6 +69,9 @@ class Sequential:
         num_batches = int(np.ceil(num_samples / batch_size))
 
         print(f"Training on {num_samples} samples ({num_batches} batches/epoch)")
+
+        best_val_acc = 0.0
+        patience_counter = 0
 
         for epoch in range(epochs):
             total_loss = 0.0
@@ -71,8 +89,8 @@ class Sequential:
                 x_batch = x_shuffled[start:end]
                 y_batch = y_shuffled[start:end]
 
-                # Move to GPU if active
-                if xp != np:
+                # Move to GPU if active and not already there
+                if xp != np and isinstance(x_batch, np.ndarray):
                     x_batch = xp.asarray(x_batch)
                     y_batch = xp.asarray(y_batch)
 
@@ -99,19 +117,37 @@ class Sequential:
             duration = time.time() - start_time
             if verbose:
                 print(f"\rEpoch {epoch+1}/{epochs} | Loss: {avg_loss:.4f} | Time: {duration:.2f}s        ")
+            
+            # Validation & Early Stopping
+            if x_val is not None and y_val is not None:
+                val_acc = self.evaluate(x_val, y_val, batch_size=batch_size, verbose=False)
+                print(f"Validation Accuracy: {val_acc * 100:.2f}%")
+                
+                if val_acc > best_val_acc:
+                    best_val_acc = val_acc
+                    patience_counter = 0
+                    # Optionally save model here
+                else:
+                    patience_counter += 1
+                    print(f"No improvement. Patience: {patience_counter}/{patience}")
+                    
+                if patience_counter >= patience:
+                    print("Early stopping triggered.")
+                    break
 
-    def evaluate(self, x_test, y_test):
-        if xp != np:
+    def evaluate(self, x_test, y_test, batch_size=64, verbose=True):
+        if xp != np and isinstance(x_test, np.ndarray):
             x_test = xp.asarray(x_test)
             y_test = xp.asarray(y_test)
             
-        preds = self.predict(x_test)
+        preds = self.predict(x_test, batch_size=batch_size)
         accuracy = xp.mean(preds == y_test)
         
         if hasattr(accuracy, 'item'): 
             accuracy = accuracy.item()
-            
-        print(f"Test Accuracy: {accuracy * 100:.2f}%")
+        
+        if verbose:
+            print(f"Test Accuracy: {accuracy * 100:.2f}%")
         return accuracy
 
     def save(self, filename):

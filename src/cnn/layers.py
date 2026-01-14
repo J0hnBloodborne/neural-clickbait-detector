@@ -145,6 +145,7 @@ class Dense(Layer):
         self.grads['b'] = None
         
     def forward(self, x):
+        self.x_shape = x.shape
         self.x_flat = x.reshape(x.shape[0], -1)
         out = xp.dot(self.x_flat, self.params['w']) + self.params['b']
         return out
@@ -153,7 +154,7 @@ class Dense(Layer):
         self.grads['w'] = xp.dot(self.x_flat.T, dout)
         self.grads['b'] = xp.sum(dout, axis=0)
         dx_flat = xp.dot(dout, self.params['w'].T)
-        return dx_flat.reshape(self.x_flat.shape[0], -1)
+        return dx_flat.reshape(self.x_shape)
     
 
 class SoftmaxCrossEntropy(Layer):

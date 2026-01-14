@@ -102,7 +102,18 @@ def main():
     model.evaluate(x_val, y_val, batch_size=64)
     
     # 6. Save
-    model.save("cifar_vgg.pkl")
+    # Ensure models directory exists
+    models_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'models')
+    os.makedirs(models_dir, exist_ok=True)
+    
+    # Generate timestamped filename
+    import time
+    timestamp = int(time.time())
+    model_name = f"cifar_vgg_{timestamp}.pkl"
+    save_path = os.path.join(models_dir, model_name)
+    
+    print(f"Saving model to {save_path}...")
+    model.save(save_path)
 
 if __name__ == "__main__":
     main()

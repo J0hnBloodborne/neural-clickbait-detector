@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NeuralNet Viz</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+
+    <h1><span id="model-type-title">MNIST</span> <span style="color:var(--primary)">RECOGNIZER</span></h1>
+
+    <div class="container">
+        <!-- Configuration Panel -->
+        <div class="config-panel">
+            <div class="form-group">
+                <label for="model-selector">Select Model</label>
+                <select id="model-selector" onchange="loadModelConfig()">
+                    <option value="" disabled selected>Loading models...</option>
+                </select>
+            </div>
+            
+            <div class="mode-switch" id="input-mode-switch">
+                <div id="draw-tab" class="tab active" onclick="switchTab('draw')">Draw</div>
+                <div id="upload-tab" class="tab" onclick="switchTab('upload')">Upload</div>
+            </div>
+        </div>
+
+        <!-- Input Area -->
+        <div class="input-area">
+            <!-- Canvas for Drawing (MNIST only) -->
+            <div id="canvas-wrapper" class="input-wrapper">
+                <canvas id="canvas" width="280" height="280"></canvas>
+                <div class="controls">
+                    <button onclick="clearCanvas()" class="secondary">Clear</button>
+                    <button onclick="predictCanvas()">Predict Drawing</button>
+                </div>
+            </div>
+
+            <!-- Upload Area (Both) -->
+            <div id="upload-wrapper" class="input-wrapper" style="display:none;">
+                <div class="drop-zone" onclick="document.getElementById('file-input').click()">
+                    <p>Click or Drag Image Here</p>
+                    <input type="file" id="file-input" accept="image/*" onchange="previewImage(this)">
+                    <img id="image-preview" src="" alt="Preview">
+                </div>
+                <div class="controls">
+                    <button onclick="predictUpload()">Predict Image</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Results Area -->
+        <div class="results-container">
+            <div class="loader" id="loader"></div>
+            <div id="prediction">-</div>
+            <div id="confidence">Select a model & input</div>
+            <div id="classes-list" class="classes-list"></div>
+        </div>
+    </div>
+
+    <script src="/static/js/main.js"></script>
+</body>
+</html>

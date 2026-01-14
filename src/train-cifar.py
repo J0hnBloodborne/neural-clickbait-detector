@@ -11,6 +11,7 @@ from src.cnn.layers import use_gpu as use_gpu_layers
 from src.cnn.im2col import use_gpu as use_gpu_im2col
 from src.cnn.network import Sequential, use_gpu as use_gpu_network
 from src.cnn.optimizers import Adam, use_gpu as use_gpu_optimizers
+from src.utils.evaluation import evaluate_model
 
 def main():
     print("--- CIFAR-10 Training Script ---")
@@ -114,6 +115,17 @@ def main():
     
     print(f"Saving model to {save_path}...")
     model.save(save_path)
+
+    # 7. Detailed Evaluation
+    print("Generating detailed classification report and heatmap...")
+    y_pred = model.predict(x_val, batch_size=64)
+    
+    # Save reports to reports directory
+    reports_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'reports')
+    os.makedirs(reports_dir, exist_ok=True)
+    
+    classes = ['airplane', 'automobile', 'bird', 'cat', 'deer', 'dog', 'frog', 'horse', 'ship', 'truck']
+    evaluate_model(y_val, y_pred, classes, save_dir=reports_dir, prefix=f'cifar_train_{timestamp}')
 
 if __name__ == "__main__":
     main()

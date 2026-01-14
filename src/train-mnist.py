@@ -9,6 +9,7 @@ from src.data.loader import load_mnist
 from src.cnn.layers import ConvLayer, ReLU, MaxPool, Dense, SoftmaxCrossEntropy
 from src.cnn.network import Sequential
 from src.cnn.optimizers import Adam
+from src.utils.evaluation import evaluate_model
 
 # Import modules to enable GPU
 import src.cnn.layers
@@ -95,6 +96,16 @@ def main():
     
     print(f"Saving model to {save_path}...")
     model.save(save_path)
+
+    # 7. Detailed Evaluation
+    print("Generating detailed classification report and heatmap...")
+    y_pred = model.predict(x_test, batch_size=64)
+    
+    # Save reports to reports directory
+    reports_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'reports')
+    os.makedirs(reports_dir, exist_ok=True)
+    
+    evaluate_model(y_test, y_pred, class_names=[str(i) for i in range(10)], save_dir=reports_dir, prefix=f'mnist_train_{timestamp}')
 
 if __name__ == "__main__":
     main()

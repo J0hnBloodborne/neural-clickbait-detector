@@ -19,6 +19,9 @@ def to_cpu(x):
     if xp == np: return x
     return xp.asnumpy(x)
 
+# padding = 0 -> valid
+# padding = 1 -> same
+# padding > 1 -> full
 def get_im2col_indices(x_shape, field_height, field_width, padding=1, stride=1):
     # calc output dims
     N, C, H, W = x_shape
